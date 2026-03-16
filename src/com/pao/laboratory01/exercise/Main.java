@@ -46,10 +46,15 @@ public class Main {
                     // 1. Citește numele mașinii de la tastatură (scanner.next())
                     // 2. Citește textul review-ului (scanner.next())
                     // 3. Apelează carService.addReview(carName, review)
+                    String numeMasina = scanner.next();
+                    scanner.nextLine();
+                    String review = scanner.nextLine();
+                    carService.addReview(numeMasina, review);
                     System.out.println("TODO — implementează adăugare review");
                     break;
                 case 0:
                     System.out.println("La revedere!");
+                    scanner.close();
                     System.exit(0);
                     break;
                 default:
