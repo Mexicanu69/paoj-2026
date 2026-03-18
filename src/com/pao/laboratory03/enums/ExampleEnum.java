@@ -19,6 +19,7 @@ public class ExampleEnum {
         },
         EARTH(5.976e+24, 6.37814e6) {
             @Override public String describe() { return "Planeta noastră"; }
+            
         },
         MARS(6.421e+23, 3.3972e6) {
             @Override public String describe() { return "Planeta roșie"; }
@@ -58,7 +59,7 @@ public class ExampleEnum {
         // values() — toate constantele
         System.out.println("\nToate sezoanele:");
         for (Season s : Season.values()) {
-            System.out.println("  " + s.name() + " (ordinal=" + s.ordinal() + ")");
+            System.out.println("  " + s + " (ordinal=" + s.ordinal() + ")");
         }
 
         // valueOf — String → enum
