@@ -22,11 +22,10 @@ public class StudentService {
     }
 
     public void addStudent(String name, int age) {
-        // Check if student with same name already exists
         boolean exists = students.stream()
                 .anyMatch(s -> s.getName().equalsIgnoreCase(name));
         if (exists) {
-            throw new RuntimeException("Există deja un student cu numele " + name);
+            throw new RuntimeException("Exista deja un student cu numele " + name);
         }
         Student student = new Student(name, age);
         students.add(student);
@@ -36,7 +35,7 @@ public class StudentService {
         return students.stream()
                 .filter(s -> s.getName().equalsIgnoreCase(name))
                 .findFirst()
-                .orElseThrow(() -> new StudentNotFoundException("Studentul " + name + " nu a fost găsit"));
+                .orElseThrow(() -> new StudentNotFoundException("Studentul " + name + " nu a fost gasit"));
     }
 
     public void addGrade(String studentName, Subject subject, double grade) {
@@ -46,7 +45,7 @@ public class StudentService {
 
     public void printAllStudents() {
         if (students.isEmpty()) {
-            System.out.println("Nu există studenți înregistrați.");
+            System.out.println("Nu exista studenti inregistrati.");
             return;
         }
         for (Student student : students) {
@@ -65,7 +64,7 @@ public class StudentService {
 
     public void printTopStudents() {
         if (students.isEmpty()) {
-            System.out.println("Nu există studenți înregistrați.");
+            System.out.println("Nu exista studenti inregistrati.");
             return;
         }
 
@@ -82,7 +81,6 @@ public class StudentService {
     public Map<Subject, Double> getAveragePerSubject() {
         Map<Subject, List<Double>> subjectGrades = new HashMap<>();
 
-        // Collect all grades per subject
         for (Student student : students) {
             for (Map.Entry<Subject, Double> entry : student.getGrades().entrySet()) {
                 Subject subject = entry.getKey();
@@ -92,7 +90,7 @@ public class StudentService {
             }
         }
 
-        // Calculate average for each subject
+
         Map<Subject, Double> averages = new HashMap<>();
         for (Map.Entry<Subject, List<Double>> entry : subjectGrades.entrySet()) {
             List<Double> grades = entry.getValue();

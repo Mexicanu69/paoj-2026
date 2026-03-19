@@ -13,7 +13,7 @@ public class Student {
 
     public Student(String name, int age) {
         if (age < 18 || age > 60) {
-            throw new InvalidStudentException("Vârsta trebuie să fie între 18 și 60 ani");
+            throw new InvalidStudentException("Varsta trebuie sa fie intre 18 si 60 ani");
         }
         this.name = name;
         this.age = age;
@@ -29,12 +29,12 @@ public class Student {
     }
 
     public Map<Subject, Double> getGrades() {
-        return new HashMap<>(grades); // return a copy to preserve encapsulation
+        return new HashMap<>(grades);
     }
 
     public void addGrade(Subject subject, double grade) {
         if (grade < 1 || grade > 10) {
-            throw new InvalidGradeException("Nota trebuie să fie între 1 și 10");
+            throw new InvalidGradeException("Nota trebuie să fie intre 1 si 10");
         }
         grades.put(subject, grade);
     }
