@@ -13,7 +13,7 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         boolean running = true;
 
-        System.out.println("--- Bun venit la platforma ReadOn ---");
+        System.out.println("Platforma bookster (placeholder name lol)");
 
         while (running) {
             System.out.println("\nSelectati o actiune:");
