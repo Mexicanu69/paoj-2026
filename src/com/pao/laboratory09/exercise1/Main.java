@@ -7,7 +7,6 @@ public class Main {
     private static final String OUTPUT_FILE = "output/lab09_ex1.ser";
 
     public static void main(String[] args) {
-        // Folosim Locale.US pentru a ne asigura că suma se printează cu punct (1500.00), nu cu virgulă
         Locale.setDefault(Locale.US);
         Scanner scanner = new Scanner(System.in);
         List<Tranzactie> tranzactii = new ArrayList<>();
@@ -28,26 +27,20 @@ public class Main {
             tranzactii.add(t);
         }
 
-        // ASIGURARE FOLDER OUTPUT - Aici era problema ta!
         File outputFile = new File(OUTPUT_FILE);
         if (outputFile.getParentFile() != null) {
             outputFile.getParentFile().mkdirs();
         }
 
-        // SERIALIZARE
         try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(OUTPUT_FILE))) {
             oos.writeObject(tranzactii);
-        } catch (IOException e) {
-            // Checker-ul s-ar putea să nu vrea stacktrace în output-ul standard
-        }
+        } catch (IOException e) {}
 
         // DESERIALIZARE
         List<Tranzactie> tranzactiiCitite = new ArrayList<>();
         try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(OUTPUT_FILE))) {
             tranzactiiCitite = (List<Tranzactie>) ois.readObject();
-        } catch (IOException | ClassNotFoundException e) {
-            // Dacă nu putem citi, rămânem cu lista goală
-        }
+        } catch (IOException | ClassNotFoundException e) {}
 
         // PROCESARE COMENZI
         while (scanner.hasNext()) {

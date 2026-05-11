@@ -15,44 +15,36 @@ public class Main {
         Locale.setDefault(Locale.US);
         Scanner scanner = new Scanner(System.in);
 
-        // Creăm folderul output dacă nu există
         File out = new File(OUTPUT_FILE);
         if (out.getParentFile() != null) out.getParentFile().mkdirs();
 
         if (!scanner.hasNextInt()) return;
         int n = scanner.nextInt();
 
-        // 1. Scriere inițială
         try (DataOutputStream dos = new DataOutputStream(new FileOutputStream(OUTPUT_FILE))) {
             for (int i = 0; i < n; i++) {
                 int id = scanner.nextInt();
                 double suma = scanner.nextDouble();
                 String data = scanner.next();
-                String tipStr = scanner.next(); // Citim direct ca String (ex: "CREDIT")
-
-                // ID (4 bytes, Little-Endian)
+                String tipStr = scanner.next(); 
+                
                 dos.write(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(id).array());
-                // SUMA (8 bytes, Little-Endian)
+                
                 dos.write(ByteBuffer.allocate(8).order(ByteOrder.LITTLE_ENDIAN).putDouble(suma).array());
 
-                // DATA (10 chars ASCII, paddat cu spații)
                 byte[] dataBytes = new byte[10];
                 byte[] rawData = data.getBytes(StandardCharsets.US_ASCII);
                 System.arraycopy(rawData, 0, dataBytes, 0, Math.min(rawData.length, 10));
                 for (int j = rawData.length; j < 10; j++) dataBytes[j] = (byte) ' ';
                 dos.write(dataBytes);
 
-                // TIP (Byte 22: 0=CREDIT, 1=DEBIT)
                 dos.writeByte(tipStr.equalsIgnoreCase("CREDIT") ? 0 : 1);
-                // STATUS (Byte 23: 0=PENDING inițial)
                 dos.writeByte(0); 
 
-                // PADDING (8 bytes zerouri)
                 dos.write(new byte[8]);
             }
         }
 
-        // 2. Procesare comenzi (Random Access)
         try (RandomAccessFile raf = new RandomAccessFile(OUTPUT_FILE, "rw")) {
             while (scanner.hasNext()) {
                 String comanda = scanner.next();
@@ -63,7 +55,6 @@ public class Main {
                     String newStatus = scanner.next();
                     int statusCode = newStatus.equals("PROCESSED") ? 1 : newStatus.equals("REJECTED") ? 2 : 0;
                     
-                    // Salt direct la offsetul de status (23) din înregistrarea idx
                     raf.seek((long) idx * RECORD_SIZE + 23);
                     raf.write(statusCode);
                     System.out.println("Updated [" + idx + "]: " + newStatus);
@@ -93,7 +84,6 @@ public class Main {
         String tip = (tipCode == 0) ? "CREDIT" : "DEBIT";
         String status = (statusCode == 1) ? "PROCESSED" : (statusCode == 2) ? "REJECTED" : "PENDING";
 
-        // Formatul cerut de Readme: [idx] id=<id> data=<data> tip=<TIP> suma=<suma> RON status=<STATUS>
         System.out.printf("[%d] id=%d data=%s tip=%s suma=%.2f RON status=%s\n",
                 idx, id, data, tip, suma, status);
     }
