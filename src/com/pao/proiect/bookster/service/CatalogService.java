@@ -1,12 +1,14 @@
 package com.pao.proiect.bookster.service;
 
-import java.util.*;
-
 import com.pao.proiect.bookster.model.Carte;
+import com.pao.proiect.bookster.repository.CarteRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class CatalogService {
     private static CatalogService instance;
-    private List<Carte> carti = new ArrayList<>(); // Colectie tip List
+    private final CarteRepository carteRepository = new CarteRepository();
+    private final AuditService audit = AuditService.getInstance();
 
     private CatalogService() {}
 
@@ -16,30 +18,29 @@ public class CatalogService {
     }
 
     public void adaugaCarte(Carte c) {
-        carti.add(c);
-        Collections.sort(carti); // Sortare automata
+        audit.logActiune("adauga_carte");
+        carteRepository.save(c);
     }
 
     public void stergeCarte(String titlu) {
-        carti.removeIf(c -> c.getTitlu().equalsIgnoreCase(titlu));
+        audit.logActiune("sterge_carte");
+        carteRepository.delete(titlu);
     }
 
     public List<Carte> listeazaToate() {
-        return carti;
+        audit.logActiune("listeaza_toate_cartile");
+        return carteRepository.findAll();
     }
 
     public Carte cautaDupaTitlu(String titlu) {
-        for (Carte c : carti) {
-            if (c.getTitlu().equalsIgnoreCase(titlu)) return c;
-        }
-        return null;
+        audit.logActiune("cauta_carte_dupa_titlu");
+        return carteRepository.findById(titlu).orElse(null);
     }
 
     public List<Carte> filterDupaCategorie(String cat) {
-        List<Carte> rezultate = new ArrayList<>();
-        for (Carte c : carti) {
-            if (c.getCategorie().equalsIgnoreCase(cat)) rezultate.add(c);
-        }
-        return rezultate;
+        audit.logActiune("listeaza_carti_dupa_categorie");
+        return carteRepository.findAll().stream()
+                .filter(c -> c.getCategorie().equalsIgnoreCase(cat))
+                .collect(Collectors.toList());
     }
 }

@@ -27,6 +27,10 @@ public class Main {
             System.out.println("8. Verifica stoc (exemplare disponibile)");
             System.out.println("9. Listeaza angajatii unei companii");
             System.out.println("10. Sterge o carte din sistem");
+            System.out.println("11. [JOIN] Top carti imprumutate");
+            System.out.println("12. [JOIN] Afiseaza imprumuturi active");
+            System.out.println("13. [JOIN] Statistici companii");
+
             System.out.println("0. Iesire");
             System.out.print("Optiune: ");
 
@@ -132,6 +136,18 @@ public class Main {
                 case 0:
                     running = false;
                     System.out.println("Inchidere aplicatie...");
+                    break;
+
+                case 11:
+                    retea.afiseazaTopCarti();
+                    break;
+
+                case 12:
+                    retea.afiseazaActive();
+                    break;
+
+                case 13:
+                    retea.afiseazaStatistici();
                     break;
 
                 default:

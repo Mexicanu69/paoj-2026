@@ -2,13 +2,17 @@ package com.pao.proiect.bookster.service;
 
 import com.pao.proiect.bookster.exception.*;
 import com.pao.proiect.bookster.model.*;
-import java.util.*;
+import com.pao.proiect.bookster.repository.*;
+import java.sql.SQLException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReteaService {
     private static ReteaService instance;
-    private Set<String> companiiPartnere = new HashSet<>(); // Colectie tip Set
-    private List<Client> clienti = new ArrayList<>();
-    private Map<String, List<Imprumut>> imprumuturiPeCompanie = new HashMap<>(); // Colectie tip Map
+    private final CompanieRepository companieRepo = new CompanieRepository();
+    private final ClientRepository clientRepo = new ClientRepository();
+    private final ImprumutRepository imprumutRepo = new ImprumutRepository();
+    private final AuditService audit = AuditService.getInstance();
 
     private ReteaService() {}
 
@@ -18,60 +22,55 @@ public class ReteaService {
     }
 
     public void adaugaCompanie(String nume) {
-        companiiPartnere.add(nume);
+        audit.logActiune("adauga_companie");
+        companieRepo.save(nume);
     }
 
     public void inregistreazaClient(Client c) {
-        if (companiiPartnere.contains(c.getNumeCompanie())) {
-            clienti.add(c);
+        audit.logActiune("inregistreaza_client");
+        if (companieRepo.findById(c.getNumeCompanie()).isPresent()) {
+            clientRepo.save(c);
             System.out.println("Procesare inregistrare finalizata.");
-        }
-        else{
-            System.out.print("Compania nu exista");
+        } else {
+            System.out.println("Compania nu exista.");
         }
     }
 
     public void realizeazaImprumut(String emailClient, String titluCarte) throws ClientNegasitException, CarteNedisponibilaException {
-        Client gasit = null;
-        for (Client c : clienti) {
-            if (c.getEmail().equals(emailClient)) {
-                gasit = c;
-                break;
-            }
+        audit.logActiune("imprumuta_carte");
+        if (clientRepo.findById(emailClient).isEmpty()) {
+            throw new ClientNegasitException("Clientul cu email-ul " + emailClient + " nu exista.");
         }
-
-        if (gasit == null) throw new ClientNegasitException("Clientul cu email-ul " + emailClient + " nu exista.");
-
+        
         Carte carte = CatalogService.getInstance().cautaDupaTitlu(titluCarte);
         if (carte == null || carte.getExemplareDisponibile() <= 0) {
             throw new CarteNedisponibilaException("Cartea nu este in stoc.");
         }
 
-        carte.setExemplareDisponibile(carte.getExemplareDisponibile() - 1);
-        Imprumut i = new Imprumut(gasit, carte);
-        
-        imprumuturiPeCompanie.putIfAbsent(gasit.getNumeCompanie(), new ArrayList<>());
-        imprumuturiPeCompanie.get(gasit.getNumeCompanie()).add(i);
+        try {
+            imprumutRepo.inregistreazaImprumutTranzactie(emailClient, titluCarte);
+        } catch (SQLException e) {
+            throw new CarteNedisponibilaException("Tranzactia a esuat: " + e.getMessage());
+        }
     }
 
     public List<Client> getClientiDinCompanie(String numeCompanie) {
-        List<Client> rezultate = new ArrayList<>();
-        for (Client c : clienti) {
-            if (c.getNumeCompanie().equals(numeCompanie)) rezultate.add(c);
-        }
-        return rezultate;
+        audit.logActiune("listeaza_angajati_companie");
+        return clientRepo.findAll().stream()
+                .filter(c -> c.getNumeCompanie().equalsIgnoreCase(numeCompanie))
+                .collect(Collectors.toList());
     }
 
     public void returneazaCarte(String email, String titlu) {
-        // Logica simplificata pentru returnare
-        for (List<Imprumut> lista : imprumuturiPeCompanie.values()) {
-            for (Imprumut i : lista) {
-                if (i.getClient().getEmail().equals(email) && i.getCarte().getTitlu().equals(titlu) && !i.esteReturnat()) {
-                    i.returneaza();
-                    i.getCarte().setExemplareDisponibile(i.getCarte().getExemplareDisponibile() + 1);
-                    return;
-                }
-            }
+        audit.logActiune("returneaza_carte");
+        try {
+            imprumutRepo.returneazaCarteTranzactie(email, titlu);
+        } catch (SQLException e) {
+            System.out.println("Eroare la returnare DB: " + e.getMessage());
         }
     }
+
+    public void afiseazaTopCarti() { imprumutRepo.afiseazaTopCartiImprumutate(); }
+    public void afiseazaActive() { imprumutRepo.afiseazaImprumuturiActive(); }
+    public void afiseazaStatistici() { imprumutRepo.afiseazaStatisticiCompanii(); }
 }
